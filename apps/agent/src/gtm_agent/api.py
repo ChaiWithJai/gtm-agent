@@ -10,11 +10,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from gtm_agent.tools import (
-    get_diagnostic_question,
     calculate_escalator_level,
-    write_artifact,
     get_artifact_storage,
-    clear_artifact_storage,
+    get_diagnostic_question,
+    write_artifact,
 )
 
 app = FastAPI(
@@ -186,11 +185,13 @@ async def send_message(input: MessageInput) -> StreamingResponse:
             yield f"data: {json.dumps({'event': 'scorecard', 'scorecard': scorecard})}\n\n"
 
             # Save scorecard artifact
-            write_artifact.invoke({
-                "filename": "gtm-scorecard.json",
-                "content": json.dumps(scorecard, indent=2),
-                "artifact_type": "scorecard",
-            })
+            write_artifact.invoke(
+                {
+                    "filename": "gtm-scorecard.json",
+                    "content": json.dumps(scorecard, indent=2),
+                    "artifact_type": "scorecard",
+                }
+            )
             session["artifacts"].append("gtm-scorecard.json")
 
             yield f"data: {json.dumps({'event': 'artifact', 'filename': 'gtm-scorecard.json'})}\n\n"
@@ -218,11 +219,13 @@ async def send_message(input: MessageInput) -> StreamingResponse:
             ]
 
             for filename, content, artifact_type in artifacts:
-                write_artifact.invoke({
-                    "filename": filename,
-                    "content": content,
-                    "artifact_type": artifact_type,
-                })
+                write_artifact.invoke(
+                    {
+                        "filename": filename,
+                        "content": content,
+                        "artifact_type": artifact_type,
+                    }
+                )
                 session["artifacts"].append(filename)
                 yield f"data: {json.dumps({'event': 'artifact', 'filename': filename})}\n\n"
 
