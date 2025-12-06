@@ -1,0 +1,8 @@
+{
+  "python_version": "3.11",
+  "dependencies": ["./apps/agent"],
+  "graphs": {
+    "gtm-agent": "./apps/agent/src/gtm_agent/agent.py:agent"
+  },
+  "env": "./apps/web/.env"
+}

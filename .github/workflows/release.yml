@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd apps/agent
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run full test suite
+        run: |
+          cd apps/agent
+          pytest tests/ -v
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_TRACING_V2: "true"
+          LANGSMITH_PROJECT: "gtm-agent-release"
+
+      - name: Build package
+        run: |
+          cd apps/agent
+          pip install build
+          python -m build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            apps/agent/dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: release
+    runs-on: ubuntu-latest
+    if: contains(github.ref, '-rc') || contains(github.ref, '-beta')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to LangGraph Cloud (Staging)
+        run: |
+          echo "Deploying to staging..."
+          # langgraph deploy --environment staging
+          echo "Staging deployment placeholder"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: release
+    runs-on: ubuntu-latest
+    if: "!contains(github.ref, '-rc') && !contains(github.ref, '-beta')"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to LangGraph Cloud (Production)
+        run: |
+          echo "Deploying to production..."
+          # langgraph deploy --environment production
+          echo "Production deployment placeholder"
