@@ -12,7 +12,7 @@ def temp_dir(tmp_path):
     return tmp_path
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def vcr_config():
     """VCR configuration for recording/replaying HTTP interactions."""
     return {
