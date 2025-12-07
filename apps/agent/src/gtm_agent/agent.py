@@ -9,7 +9,12 @@ from gtm_agent.prompts import GTM_SYSTEM_PROMPT
 from gtm_agent.schemas import ArtifactMetadata, DiagnosticAnswer, EscalatorScorecard
 
 # Check if running in LangGraph API environment
-running_in_langgraph_api = os.environ.get("LANGGRAPH_API") == "true"
+# LangGraph API sets various env vars - check common ones
+running_in_langgraph_api = (
+    os.environ.get("LANGGRAPH_API") == "true"
+    or os.environ.get("LANGGRAPH_API_URL") is not None
+    or "langgraph" in os.environ.get("_", "").lower()
+)
 
 
 class GTMState(MessagesState):
@@ -179,5 +184,5 @@ def create_gtm_graph(use_memory: bool = True):
 
 
 # Default agent instance for LangGraph deployment
-# Using create_gtm_agent for deepagents-based deployment
-agent = create_gtm_agent()
+# Don't pass checkpointer - LangGraph API provides persistence automatically
+agent = create_gtm_agent(use_memory=False)
