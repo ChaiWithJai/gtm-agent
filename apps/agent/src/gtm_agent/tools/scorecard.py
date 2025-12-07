@@ -187,17 +187,67 @@ def _get_recommendations_for_level(level: int) -> list[str]:
     return recommendations[:5]
 
 
+def _personalize_recommendations(
+    recommendations: list[str],
+    company_context: dict | None = None,
+    answers: dict[str, str] | None = None,
+) -> list[str]:
+    """Personalize recommendations with company context.
+
+    Args:
+        recommendations: Base recommendations
+        company_context: Optional dict with company_name, product_description, key_features
+        answers: Diagnostic answers for additional context
+
+    Returns:
+        Personalized recommendations
+    """
+    if not company_context:
+        return recommendations
+
+    company_name = company_context.get("company_name", "your company")
+    product_desc = company_context.get("product_description", "")
+    features = company_context.get("key_features", [])
+
+    personalized = []
+    for rec in recommendations:
+        # Add company-specific context
+        if "ICP" in rec and answers:
+            icp = answers.get("q1_icp", "")
+            if icp and "Not sure" not in icp:
+                rec = rec.replace("your ICP", icp).replace("ICP", icp)
+
+        if "customers" in rec.lower() and product_desc:
+            rec = f"{rec} (Focus on how {company_name} solves: {product_desc[:100]})"
+
+        personalized.append(rec)
+
+    # Add company-specific action items
+    if features:
+        personalized.append(
+            f"Highlight {company_name}'s key differentiator: {features[0] if features else 'core feature'}"
+        )
+
+    return personalized[:5]
+
+
 @tool
-def calculate_escalator_level(answers: dict[str, str]) -> dict:
+def calculate_escalator_level(
+    answers: dict[str, str],
+    company_context: dict | None = None,
+) -> dict:
     """Calculate GTM Escalator level from diagnostic answers.
 
     This tool takes the user's diagnostic answers and calculates their
     current GTM Escalator level (1-5), along with identified gaps and
-    prioritized recommendations.
+    prioritized recommendations. If company context is provided,
+    recommendations are personalized to the specific company.
 
     Args:
         answers: Dict mapping question_id to selected_option
             Example: {"q1_icp": "SMB Founders", "q2_problem": "Crystal clear", "q3_validation": "Pilots"}
+        company_context: Optional dict with company info from web_fetch
+            Example: {"company_name": "Acme", "product_description": "...", "key_features": [...]}
 
     Returns:
         Dict matching EscalatorScorecard schema with level, scores, gaps, recommendations
@@ -206,6 +256,9 @@ def calculate_escalator_level(answers: dict[str, str]) -> dict:
     level = _determine_level(scores)
     gaps = _get_gaps_for_level(level, answers)
     recommendations = _get_recommendations_for_level(level)
+
+    # Personalize recommendations with company context
+    recommendations = _personalize_recommendations(recommendations, company_context, answers)
 
     scorecard = EscalatorScorecard(
         level=level,

@@ -203,13 +203,31 @@ Respond in this exact JSON format:
 class GTMAgentClient:
     """Client for interacting with GTM Agent via LangGraph API."""
 
-    def __init__(self, base_url: str = "http://localhost:8123"):
+    def __init__(self, base_url: str = "http://localhost:2024"):
         self.base_url = base_url
         self.thread_id = None
         self.conversation = []
+        self.assistant_id = None
+
+    def _get_assistant_id(self, graph_name: str = "gtm-agent") -> str:
+        """Look up the assistant_id for a graph name."""
+        resp = requests.post(
+            f"{self.base_url}/assistants/search",
+            json={}
+        )
+        resp.raise_for_status()
+        assistants = resp.json()
+        for assistant in assistants:
+            if assistant.get("graph_id") == graph_name:
+                return assistant["assistant_id"]
+        raise ValueError(f"No assistant found for graph: {graph_name}")
 
     def create_thread(self) -> str:
         """Create a new conversation thread."""
+        # Look up assistant_id on first thread creation
+        if not self.assistant_id:
+            self.assistant_id = self._get_assistant_id()
+
         resp = requests.post(f"{self.base_url}/threads", json={})
         resp.raise_for_status()
         self.thread_id = resp.json()["thread_id"]
@@ -228,7 +246,7 @@ class GTMAgentClient:
         run_resp = requests.post(
             f"{self.base_url}/threads/{self.thread_id}/runs",
             json={
-                "assistant_id": "gtm-agent",
+                "assistant_id": self.assistant_id,
                 "input": {"messages": [{"role": "user", "content": content}]}
             }
         )
