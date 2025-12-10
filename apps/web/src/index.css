@@ -1,14 +1,16 @@
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --bg: #0f172a;
-  --bg-card: #1e293b;
-  --bg-input: #334155;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --border: #475569;
+  /* Princeton Idea Exchange Branding */
+  --primary: #ff5900;
+  --primary-dark: #001666;
+  --bg: #f8f6f3;
+  --bg-card: #ffffff;
+  --bg-input: #ebeae6;
+  --text: #2a3132;
+  --text-muted: #5f6566;
+  --border: #d4d3d0;
   --success: #22c55e;
   --warning: #f59e0b;
+  --accent-blue: #cadcfc;
 }
 
 * {
@@ -38,7 +40,7 @@ body {
 .header h1 {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), #a855f7);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -55,6 +57,7 @@ body {
   padding: 1.5rem;
   margin-bottom: 1rem;
   border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .chat-container {
@@ -91,6 +94,7 @@ body {
 
 .message.user .message-content {
   background: var(--primary);
+  color: white;
 }
 
 .options-grid {
@@ -113,7 +117,7 @@ body {
 
 .option-btn:hover {
   border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(255, 89, 0, 0.1);
 }
 
 .option-btn:disabled {
@@ -162,10 +166,11 @@ body {
 }
 
 .scorecard {
-  background: linear-gradient(135deg, var(--primary), #a855f7);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border-radius: 1rem;
   padding: 1.5rem;
   margin: 1rem 0;
+  color: white;
 }
 
 .scorecard h3 {
@@ -291,15 +296,17 @@ body {
 
 .start-option {
   padding: 1.5rem;
-  background: var(--bg-input);
+  background: var(--bg-card);
   border: 2px solid var(--border);
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .start-option:hover {
   border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(255, 89, 0, 0.15);
 }
 
 .start-option h3 {
